@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – AI CareerCraft</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <div class="loading-text">AI is working its magic…</div>
+  <div class="loading-subtext">This usually takes 5-10 seconds</div>
+</div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  {% include '_sidebar.html' ignore missing %}
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-icon">C</div>
+      <div>
+        <div class="brand-text">AI CareerCraft</div>
+        <div class="brand-sub">Resume & Portfolio AI</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item active" href="/dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <div class="nav-section-label">AI Tools</div>
+      <a class="nav-item" href="/resume">
+        <span class="nav-icon">📄</span> Resume Builder
+      </a>
+      <a class="nav-item" href="/cover-letter">
+        <span class="nav-icon">✍️</span> Cover Letter
+      </a>
+      <a class="nav-item" href="/portfolio">
+        <span class="nav-icon">🎨</span> Portfolio Builder
+      </a>
+      <a class="nav-item" href="/ats-checker">
+        <span class="nav-icon">🔍</span> ATS Checker
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      {% if demo_mode %}
+      <div class="demo-badge">⚡ Demo Mode Active</div>
+      {% endif %}
+      <a href="/" class="nav-item" style="text-decoration:none">
+        <span class="nav-icon">🏠</span> Home Page
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Welcome to AI CareerCraft</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        {% if demo_mode %}
+        <span class="badge badge-demo">⚡ Demo Mode</span>
+        {% else %}
+        <span class="badge badge-success">✓ AI Connected</span>
+        {% endif %}
+        <button id="sidebarToggle" class="btn btn-secondary btn-sm" style="display:none">☰</button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <!-- DEMO ALERT -->
+      {% if demo_mode %}
+      <div class="alert alert-demo">
+        <span>⚡</span>
+        <div>
+          <strong>Running in Demo Mode</strong> — No OpenAI API key detected. All AI features use realistic sample responses so you can fully explore the application. 
+          To enable live AI, add your OpenAI API key to a <code>.env</code> file.
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- WELCOME CARD -->
+      <div class="dash-welcome">
+        <h2>Welcome to AI CareerCraft 🎓</h2>
+        <p>Your AI-powered career companion. Build professional resumes, write cover letters, and plan your career path — all powered by generative AI.</p>
+        <a href="/resume" class="btn btn-lg" style="background:#fff;color:var(--primary)">
+          🚀 Start Building Your Resume
+        </a>
+      </div>
+
+      <!-- TOOL CARDS -->
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text-muted)">AI Tools</h3>
+      <div class="dash-grid">
+        <a href="/resume" class="dash-card">
+          <div class="dash-card-icon" style="background:#ede9ff">📄</div>
+          <div>
+            <div class="dash-card-title">Resume Builder</div>
+            <div class="dash-card-desc">Create an ATS-optimized professional resume using AI</div>
+          </div>
+          <div class="dash-card-action">Build Resume →</div>
+        </a>
+        <a href="/cover-letter" class="dash-card">
+          <div class="dash-card-icon" style="background:#dcfce7">✍️</div>
+          <div>
+            <div class="dash-card-title">Cover Letter</div>
+            <div class="dash-card-desc">Generate personalized cover letters for any job</div>
+          </div>
+          <div class="dash-card-action">Generate →</div>
+        </a>
+        <a href="/portfolio" class="dash-card">
+          <div class="dash-card-icon" style="background:#fef3c7">🎨</div>
+          <div>
+            <div class="dash-card-title">Portfolio Builder</div>
+            <div class="dash-card-desc">Create professional portfolio content with AI</div>
+          </div>
+          <div class="dash-card-action">Build Portfolio →</div>
+        </a>
+        <a href="/ats-checker" class="dash-card">
+          <div class="dash-card-icon" style="background:#fee2e2">🔍</div>
+          <div>
+            <div class="dash-card-title">ATS Checker</div>
+            <div class="dash-card-desc">Analyze resume compatibility with job descriptions</div>
+          </div>
+          <div class="dash-card-action">Check Score →</div>
+        </a>
+        <a href="/ats-checker#career" class="dash-card" onclick="event.preventDefault();window.location.href='/ats-checker'">
+          <div class="dash-card-icon" style="background:#e0f7f2">🗺️</div>
+          <div>
+            <div class="dash-card-title">Career Suggestions</div>
+            <div class="dash-card-desc">Get AI-powered career path recommendations</div>
+          </div>
+          <div class="dash-card-action">Explore Careers →</div>
+        </a>
+        <a href="/resume" class="dash-card" style="background:linear-gradient(135deg,var(--primary-light),#e0f7f2)">
+          <div class="dash-card-icon" style="background:#fff">⚡</div>
+          <div>
+            <div class="dash-card-title">Quick Start</div>
+            <div class="dash-card-desc">New here? Start with your resume in under 5 minutes</div>
+          </div>
+          <div class="dash-card-action" style="color:var(--primary)">Get Started →</div>
+        </a>
+      </div>
+
+      <!-- RECENT RESUMES -->
+      {% if resumes %}
+      <div style="margin-top:8px">
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text-muted)">Recent Resumes</h3>
+        <div class="card">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border)">
+                <th style="text-align:left;padding:10px 14px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)">#</th>
+                <th style="text-align:left;padding:10px 14px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)">Name</th>
+                <th style="text-align:left;padding:10px 14px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)">Target Role</th>
+                <th style="text-align:left;padding:10px 14px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)">Created</th>
+                <th style="text-align:left;padding:10px 14px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in resumes %}
+              <tr style="border-bottom:1px solid var(--surface-2)">
+                <td style="padding:12px 14px;font-size:13px;color:var(--text-muted)">{{ r.id }}</td>
+                <td style="padding:12px 14px;font-size:14px;font-weight:600">{{ r.full_name }}</td>
+                <td style="padding:12px 14px"><span class="badge badge-primary">{{ r.target_role or "—" }}</span></td>
+                <td style="padding:12px 14px;font-size:13px;color:var(--text-muted)">{{ r.created_at[:10] if r.created_at else "—" }}</td>
+                <td style="padding:12px 14px"><a href="/resume/{{ r.id }}" class="btn btn-secondary btn-sm">View</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div style="margin-top:8px">
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text-muted)">Your Resumes</h3>
+        <div class="card">
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">No resumes yet</div>
+            <div class="empty-desc">Create your first AI-powered resume to see it here.</div>
+            <a href="/resume" class="btn btn-primary">📄 Create My First Resume</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+  // Show mobile sidebar toggle on small screens
+  const st = document.getElementById("sidebarToggle");
+  if (window.innerWidth <= 768 && st) st.style.display = "flex";
+</script>
+</body>
+</html>

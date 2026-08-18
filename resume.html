@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Builder – AI CareerCraft</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <div class="loading-text">AI is crafting your resume…</div>
+  <div class="loading-subtext">Generating professional content — this takes about 5 seconds</div>
+</div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-icon">C</div>
+      <div>
+        <div class="brand-text">AI CareerCraft</div>
+        <div class="brand-sub">Resume & Portfolio AI</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item" href="/dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+      <div class="nav-section-label">AI Tools</div>
+      <a class="nav-item active" href="/resume"><span class="nav-icon">📄</span> Resume Builder</a>
+      <a class="nav-item" href="/cover-letter"><span class="nav-icon">✍️</span> Cover Letter</a>
+      <a class="nav-item" href="/portfolio"><span class="nav-icon">🎨</span> Portfolio Builder</a>
+      <a class="nav-item" href="/ats-checker"><span class="nav-icon">🔍</span> ATS Checker</a>
+    </nav>
+    <div class="sidebar-footer">
+      {% if demo_mode %}
+      <div class="demo-badge">⚡ Demo Mode Active</div>
+      {% endif %}
+      <a href="/" class="nav-item" style="text-decoration:none"><span class="nav-icon">🏠</span> Home</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="page-header no-print">
+      <div>
+        <div class="page-title">
+          {% if resume %}Resume Preview{% else %}Resume Builder{% endif %}
+        </div>
+        <div class="page-subtitle">
+          {% if resume %}View and download your AI-generated resume{% else %}Fill in your details — AI will enhance them{% endif %}
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        {% if demo_mode %}<span class="badge badge-demo">⚡ Demo</span>{% endif %}
+        {% if resume %}
+        <a href="/resume" class="btn btn-secondary btn-sm">+ New Resume</a>
+        <button onclick="printResume()" class="btn btn-primary btn-sm">🖨️ Print / Download</button>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="page-body">
+      {% if resume %}
+      <!-- ─── RESUME PREVIEW MODE ─── -->
+      {% if demo_mode %}
+      <div class="alert alert-demo no-print">⚡ <strong>Demo Mode:</strong> AI content generated using sample data.</div>
+      {% endif %}
+      <div class="alert alert-success no-print">✓ <strong>Resume generated successfully!</strong> Your AI-enhanced resume is ready below. Use Print/Download to save it.</div>
+
+      <!-- ACTION BUTTONS -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px" class="no-print">
+        <button onclick="printResume()" class="btn btn-primary"><span>🖨️</span> Print / Download PDF</button>
+        <a href="/resume" class="btn btn-secondary"><span>✏️</span> Edit / Create New</a>
+        <a href="/ats-checker" class="btn btn-secondary"><span>🔍</span> Check ATS Score</a>
+        <a href="/cover-letter" class="btn btn-secondary"><span>✍️</span> Write Cover Letter</a>
+      </div>
+
+      <!-- RESUME DOCUMENT -->
+      <div class="resume-preview-wrap">
+        <div id="resumePreview"></div>
+      </div>
+
+      <!-- AI INSIGHTS PANEL -->
+      {% if resume.ai_content %}
+      <div class="card no-print" style="margin-top:24px">
+        <div class="card-header">
+          <div>
+            <div class="card-title">✨ AI Insights & Recommendations</div>
+            <div class="card-subtitle">Additional suggestions from AI to strengthen your profile</div>
+          </div>
+        </div>
+        <div class="tab-list">
+          <button class="tab-btn active" data-tab="skills">Skill Recommendations</button>
+          <button class="tab-btn" data-tab="objective">Career Objective</button>
+          <button class="tab-btn" data-tab="keywords">ATS Keywords</button>
+        </div>
+        <div data-tab-content="skills" class="tab-content active">
+          {% if resume.ai_content.skill_recommendations %}
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            {% for skill in resume.ai_content.skill_recommendations %}
+            <span class="badge badge-primary">+ {{ skill }}</span>
+            {% endfor %}
+          </div>
+          <p class="text-muted text-sm mt-3">Consider adding these skills to strengthen your profile.</p>
+          {% endif %}
+        </div>
+        <div data-tab-content="objective" class="tab-content">
+          <p style="font-size:15px;line-height:1.75">{{ resume.ai_content.career_objective or "—" }}</p>
+        </div>
+        <div data-tab-content="keywords" class="tab-content">
+          {% if resume.ai_content.ats_keywords %}
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            {% for kw in resume.ai_content.ats_keywords %}
+            <span class="badge badge-success">🔑 {{ kw }}</span>
+            {% endfor %}
+          </div>
+          <p class="text-muted text-sm mt-3">These keywords improve your ATS compatibility score.</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% else %}
+      <!-- ─── RESUME BUILDER FORM ─── -->
+      {% if demo_mode %}
+      <div class="alert alert-demo">⚡ <strong>Demo Mode:</strong> AI will generate realistic sample content — no API key needed.</div>
+      {% endif %}
+
+      <!-- STEPPER -->
+      <div class="stepper no-print">
+        <div class="step active">
+          <div class="step-circle">1</div>
+          <div class="step-label">Personal</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step">
+          <div class="step-circle">2</div>
+          <div class="step-label">Education</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <div class="step-label">Skills & Projects</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step">
+          <div class="step-circle">4</div>
+          <div class="step-label">Experience</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step">
+          <div class="step-circle">5</div>
+          <div class="step-label">Generate</div>
+        </div>
+      </div>
+
+      <form id="resumeForm">
+        <!-- STEP 1: PERSONAL INFO -->
+        <div class="step-panel active">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">👤 Personal Information</div>
+                <div class="card-subtitle">Let's start with the basics</div>
+              </div>
+              <span class="badge badge-primary">Step 1 of 5</span>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" name="full_name" class="form-control" placeholder="Alex Johnson" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="alex@email.com" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="text" name="phone" class="form-control" placeholder="+91 98765 43210" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Location</label>
+                <input type="text" name="location" class="form-control" placeholder="Mumbai, Maharashtra" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">LinkedIn Profile URL</label>
+                <input type="text" name="linkedin" class="form-control" placeholder="linkedin.com/in/alexjohnson" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">GitHub Profile URL</label>
+                <input type="text" name="github" class="form-control" placeholder="github.com/alexjohnson" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Job Role *</label>
+              <input type="text" name="target_role" class="form-control" placeholder="e.g. Software Developer, Data Analyst, UI/UX Designer" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Career Objective</label>
+              <textarea name="career_objective" class="form-control" rows="3" placeholder="Briefly describe your career goals and what you're looking for in a role…"></textarea>
+            </div>
+          </div>
+          <div class="step-nav">
+            <div></div>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Continue: Education →</button>
+          </div>
+        </div>
+
+        <!-- STEP 2: EDUCATION -->
+        <div class="step-panel">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🎓 Education</div>
+                <div class="card-subtitle">Your academic background</div>
+              </div>
+              <span class="badge badge-primary">Step 2 of 5</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Education Details</label>
+              <textarea name="education" class="form-control" rows="6" placeholder="B.Tech in Computer Science, XYZ University (2021–2025), CGPA: 8.5&#10;&#10;12th Grade – ABC School (2021), 92%&#10;&#10;10th Grade – ABC School (2019), 88%"></textarea>
+              <div class="text-muted text-sm mt-1">Include degree, institution, year, and GPA/percentage</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Certifications</label>
+              <textarea name="certifications" class="form-control" rows="4" placeholder="AWS Certified Cloud Practitioner (2024)&#10;Google Data Analytics Certificate (2023)&#10;Python for Data Science – Coursera (2023)"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Languages Known</label>
+              <input type="text" name="languages" class="form-control" placeholder="English (Fluent), Hindi (Native), French (Basic)" />
+            </div>
+          </div>
+          <div class="step-nav">
+            <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Continue: Skills →</button>
+          </div>
+        </div>
+
+        <!-- STEP 3: SKILLS & PROJECTS -->
+        <div class="step-panel">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">⚡ Skills & Projects</div>
+                <div class="card-subtitle">Showcase your technical abilities and work</div>
+              </div>
+              <span class="badge badge-primary">Step 3 of 5</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Technical Skills</label>
+              <textarea name="skills" class="form-control" rows="3" placeholder="Python, JavaScript, React, Node.js, SQL, MongoDB, Git, Docker, AWS, HTML/CSS"></textarea>
+              <div class="text-muted text-sm mt-1">Separate skills with commas — AI will recommend additional relevant skills</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Projects</label>
+              <textarea name="projects" class="form-control" rows="6" placeholder="1. E-Commerce Website – Built with React and Node.js. Implemented cart, payment gateway, and admin dashboard.&#10;&#10;2. Student Grade Management System – Python + MySQL desktop app for tracking 500+ students.&#10;&#10;3. Weather App – JavaScript app using OpenWeather API with location detection."></textarea>
+              <div class="text-muted text-sm mt-1">AI will enhance your project descriptions to make them more impactful</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Interests & Hobbies</label>
+              <input type="text" name="interests" class="form-control" placeholder="Open source contribution, competitive programming, UI/UX design, tech blogging" />
+            </div>
+          </div>
+          <div class="step-nav">
+            <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Continue: Experience →</button>
+          </div>
+        </div>
+
+        <!-- STEP 4: EXPERIENCE & ACHIEVEMENTS -->
+        <div class="step-panel">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">💼 Experience & Achievements</div>
+                <div class="card-subtitle">Internships, work experience and your proudest moments</div>
+              </div>
+              <span class="badge badge-primary">Step 4 of 5</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Internships / Work Experience</label>
+              <textarea name="experience" class="form-control" rows="5" placeholder="Software Development Intern – TechCorp Ltd (June–Aug 2024)&#10;• Developed REST APIs using Python Flask&#10;• Improved database query performance by 40%&#10;• Collaborated with a team of 5 developers"></textarea>
+              <div class="text-muted text-sm mt-1">AI will enhance your experience descriptions with stronger action verbs and metrics</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Achievements & Awards</label>
+              <textarea name="achievements" class="form-control" rows="4" placeholder="• 1st Place – National Hackathon 2024 (out of 200 teams)&#10;• Best Project Award – College Tech Fest 2023&#10;• Class Rank 3 in B.Tech Computer Science&#10;• Published research paper on ML in healthcare"></textarea>
+            </div>
+          </div>
+          <div class="step-nav">
+            <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Review & Generate →</button>
+          </div>
+        </div>
+
+        <!-- STEP 5: REVIEW & GENERATE -->
+        <div class="step-panel">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">✨ Review & Generate</div>
+                <div class="card-subtitle">AI will now enhance your resume content</div>
+              </div>
+              <span class="badge badge-primary">Step 5 of 5</span>
+            </div>
+            <div class="alert alert-info">
+              <span>🤖</span>
+              <div>Our AI will analyze your information and generate a professional summary, enhance your project descriptions, recommend skills, and identify ATS keywords — all tailored to your target role.</div>
+            </div>
+            <div style="padding:20px;background:var(--surface-2);border-radius:var(--radius);margin-bottom:16px">
+              <h4 style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text-muted)">What AI will generate for you:</h4>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="display:flex;gap:8px;align-items:center;font-size:14px"><span style="color:var(--success)">✓</span> Professional Summary</div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:14px"><span style="color:var(--success)">✓</span> Enhanced Career Objective</div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:14px"><span style="color:var(--success)">✓</span> Improved Project Descriptions</div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:14px"><span style="color:var(--success)">✓</span> Skill Recommendations</div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:14px"><span style="color:var(--success)">✓</span> ATS-Friendly Keywords</div>
+                <div style="display:flex;gap:8px;align-items:center;font-size:14px"><span style="color:var(--success)">✓</span> Professional Template</div>
+              </div>
+            </div>
+          </div>
+          <div class="step-nav">
+            <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
+            <button type="submit" class="btn btn-primary btn-lg">
+              ✨ Generate My AI Resume
+            </button>
+          </div>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+{% if resume %}
+<script>
+  // Render resume preview from server-side data
+  const resumeData = {{ resume | tojson }};
+  const aiContent = resumeData.ai_content || {};
+  renderResumePreview(resumeData, aiContent);
+</script>
+{% endif %}
+
+<script>
+  const st = document.getElementById("sidebarToggle");
+  if (window.innerWidth <= 768 && st) st.style.display = "flex";
+</script>
+</body>
+</html>

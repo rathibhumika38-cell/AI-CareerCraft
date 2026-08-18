@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Builder – AI CareerCraft</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <div class="loading-text">AI is crafting your portfolio…</div>
+  <div class="loading-subtext">Generating compelling professional content</div>
+</div>
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-icon">C</div>
+      <div>
+        <div class="brand-text">AI CareerCraft</div>
+        <div class="brand-sub">Resume & Portfolio AI</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item" href="/dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+      <div class="nav-section-label">AI Tools</div>
+      <a class="nav-item" href="/resume"><span class="nav-icon">📄</span> Resume Builder</a>
+      <a class="nav-item" href="/cover-letter"><span class="nav-icon">✍️</span> Cover Letter</a>
+      <a class="nav-item active" href="/portfolio"><span class="nav-icon">🎨</span> Portfolio Builder</a>
+      <a class="nav-item" href="/ats-checker"><span class="nav-icon">🔍</span> ATS Checker</a>
+    </nav>
+    <div class="sidebar-footer">
+      {% if demo_mode %}<div class="demo-badge">⚡ Demo Mode Active</div>{% endif %}
+      <a href="/" class="nav-item" style="text-decoration:none"><span class="nav-icon">🏠</span> Home</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <div class="page-title">🎨 AI Portfolio Builder</div>
+        <div class="page-subtitle">Generate professional portfolio content with AI</div>
+      </div>
+      {% if demo_mode %}<span class="badge badge-demo">⚡ Demo Mode</span>{% endif %}
+    </header>
+
+    <div class="page-body">
+      {% if demo_mode %}
+      <div class="alert alert-demo">⚡ <strong>Demo Mode:</strong> Sample portfolio content will be generated.</div>
+      {% endif %}
+
+      <div style="display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start">
+        <!-- FORM -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Your Information</div>
+              <div class="card-subtitle">AI will craft your portfolio sections</div>
+            </div>
+          </div>
+          <form id="portfolioForm">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" name="full_name" class="form-control" placeholder="Your Full Name" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Professional Title</label>
+              <input type="text" name="professional_title" class="form-control" placeholder="Full Stack Developer | ML Enthusiast" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Technical Skills</label>
+              <textarea name="skills" class="form-control" rows="3" placeholder="Python, React, Node.js, SQL, MongoDB, Docker, AWS…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Projects</label>
+              <textarea name="projects" class="form-control" rows="4" placeholder="1. AI Resume Builder – Flask, Python, OpenAI API&#10;2. E-Commerce Platform – React, Node.js, MongoDB&#10;3. Weather Dashboard – JavaScript, REST APIs"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Education</label>
+              <input type="text" name="education" class="form-control" placeholder="B.Tech CS, XYZ University 2025" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Work Experience</label>
+              <textarea name="experience" class="form-control" rows="3" placeholder="Software Intern at TechCorp (2024) – REST APIs, Flask, React"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Achievements</label>
+              <textarea name="achievements" class="form-control" rows="2" placeholder="1st Place Hackathon 2024, Best Project Award…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contact Email</label>
+              <input type="email" name="email" class="form-control" placeholder="your@email.com" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%">
+              ✨ Generate Portfolio Content
+            </button>
+          </form>
+        </div>
+
+        <!-- OUTPUT -->
+        <div>
+          <div id="portfolioOutput" class="hidden portfolio-output"></div>
+
+          <!-- PORTFOLIO PLACEHOLDER -->
+          <div id="portfolioPlaceholder" class="card">
+            <div class="empty-state">
+              <div class="empty-icon">🎨</div>
+              <div class="empty-title">Your Portfolio Content Appears Here</div>
+              <div class="empty-desc">
+                Fill in your information and let AI generate compelling portfolio sections including About Me, project descriptions, professional taglines, and more.
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:400px;margin:0 auto">
+                <span class="badge badge-primary">📝 About Me</span>
+                <span class="badge badge-success">⚡ Tagline</span>
+                <span class="badge badge-warning">🔧 Projects</span>
+                <span class="badge badge-primary">💡 Skills</span>
+                <span class="badge badge-success">📞 CTA</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- COPY ACTIONS (shown after generation) -->
+          <div id="portfolioActions" class="hidden" style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+            <button onclick="copyText('portfolioOutput')" class="btn btn-secondary">📋 Copy All Content</button>
+            <button onclick="document.getElementById('portfolioForm').requestSubmit()" class="btn btn-secondary">🔄 Regenerate</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PORTFOLIO TIPS -->
+      <div class="card" style="margin-top:24px">
+        <div class="card-title" style="margin-bottom:16px">💡 What Makes a Great Developer Portfolio?</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+          <div style="padding:14px;background:var(--primary-light);border-radius:var(--radius)">
+            <div style="font-size:22px;margin-bottom:6px">🎯</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">Clear Purpose</div>
+            <div style="font-size:12px;color:var(--text-muted)">State who you are and what value you bring immediately.</div>
+          </div>
+          <div style="padding:14px;background:#dcfce7;border-radius:var(--radius)">
+            <div style="font-size:22px;margin-bottom:6px">🔧</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">Strong Projects</div>
+            <div style="font-size:12px;color:var(--text-muted)">Feature 3-5 polished projects with live demos and code links.</div>
+          </div>
+          <div style="padding:14px;background:#fef3c7;border-radius:var(--radius)">
+            <div style="font-size:22px;margin-bottom:6px">📊</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">Quantify Impact</div>
+            <div style="font-size:12px;color:var(--text-muted)">Include numbers: "reduced load time by 60%", "served 1000+ users".</div>
+          </div>
+          <div style="padding:14px;background:#e0f7f2;border-radius:var(--radius)">
+            <div style="font-size:22px;margin-bottom:6px">📱</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">Mobile Friendly</div>
+            <div style="font-size:12px;color:var(--text-muted)">Ensure your portfolio looks great on all screen sizes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+  const pf = document.getElementById("portfolioForm");
+  if (pf) {
+    pf.addEventListener("submit", function() {
+      setTimeout(() => {
+        const po = document.getElementById("portfolioOutput");
+        if (po && !po.classList.contains("hidden")) {
+          document.getElementById("portfolioPlaceholder").style.display = "none";
+          document.getElementById("portfolioActions").classList.remove("hidden");
+        }
+      }, 500);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cover Letter Generator – AI CareerCraft</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <div class="loading-text">AI is writing your cover letter…</div>
+  <div class="loading-subtext">Crafting a personalized letter for your target company</div>
+</div>
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-icon">C</div>
+      <div>
+        <div class="brand-text">AI CareerCraft</div>
+        <div class="brand-sub">Resume & Portfolio AI</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item" href="/dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+      <div class="nav-section-label">AI Tools</div>
+      <a class="nav-item" href="/resume"><span class="nav-icon">📄</span> Resume Builder</a>
+      <a class="nav-item active" href="/cover-letter"><span class="nav-icon">✍️</span> Cover Letter</a>
+      <a class="nav-item" href="/portfolio"><span class="nav-icon">🎨</span> Portfolio Builder</a>
+      <a class="nav-item" href="/ats-checker"><span class="nav-icon">🔍</span> ATS Checker</a>
+    </nav>
+    <div class="sidebar-footer">
+      {% if demo_mode %}<div class="demo-badge">⚡ Demo Mode Active</div>{% endif %}
+      <a href="/" class="nav-item" style="text-decoration:none"><span class="nav-icon">🏠</span> Home</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <div class="page-title">✍️ AI Cover Letter Generator</div>
+        <div class="page-subtitle">Generate personalized cover letters for any job application</div>
+      </div>
+      {% if demo_mode %}<span class="badge badge-demo">⚡ Demo Mode</span>{% endif %}
+    </header>
+
+    <div class="page-body">
+      {% if demo_mode %}
+      <div class="alert alert-demo">⚡ <strong>Demo Mode:</strong> Sample cover letters will be generated without an AI API key.</div>
+      {% endif %}
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+        <!-- FORM -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Job Details</div>
+              <div class="card-subtitle">Tell us about the position you're applying for</div>
+            </div>
+          </div>
+          <form id="coverLetterForm">
+            <div class="form-group">
+              <label class="form-label">Target Company *</label>
+              <input type="text" name="company" class="form-control" placeholder="Google, Microsoft, TCS, Infosys…" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Job Title *</label>
+              <input type="text" name="job_title" class="form-control" placeholder="Software Developer Intern, Data Analyst…" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Job Description</label>
+              <textarea name="job_description" class="form-control" rows="4" placeholder="Paste the job description here to get a more tailored cover letter…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Your Key Skills</label>
+              <input type="text" name="skills" class="form-control" placeholder="Python, React, SQL, Machine Learning, Git…" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Relevant Projects / Experience</label>
+              <textarea name="projects" class="form-control" rows="3" placeholder="E-commerce platform built with React, internship at XYZ Corp where I worked on backend APIs…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Your Name</label>
+              <input type="text" name="candidate_name" class="form-control" placeholder="Your Full Name" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%">
+              ✨ Generate Cover Letter
+            </button>
+          </form>
+        </div>
+
+        <!-- OUTPUT -->
+        <div>
+          <div class="card hidden" id="clOutputCard">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Generated Cover Letter</div>
+                <div class="card-subtitle">AI-crafted and ready to use</div>
+              </div>
+              <span class="badge badge-success">✓ Ready</span>
+            </div>
+            <div class="cover-letter-output" id="coverLetterOutput"></div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div id="clActions" class="hidden" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <button id="copyCL" class="btn btn-primary"><span>📋</span> Copy to Clipboard</button>
+            <button id="regenerateCL" class="btn btn-secondary"><span>🔄</span> Regenerate</button>
+            <button onclick="window.print()" class="btn btn-secondary"><span>🖨️</span> Print</button>
+          </div>
+
+          <!-- PLACEHOLDER when no letter yet -->
+          <div id="clPlaceholder" class="card">
+            <div class="empty-state">
+              <div class="empty-icon">✍️</div>
+              <div class="empty-title">Your Cover Letter Appears Here</div>
+              <div class="empty-desc">Fill in the form and click "Generate Cover Letter" to get a personalized letter crafted by AI.</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:320px;margin:0 auto;text-align:left">
+                <div class="badge badge-primary" style="justify-content:center">Personalized</div>
+                <div class="badge badge-success" style="justify-content:center">Professional</div>
+                <div class="badge badge-warning" style="justify-content:center">Editable</div>
+                <div class="badge badge-primary" style="justify-content:center">Copyable</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIPS -->
+      <div class="card" style="margin-top:24px">
+        <div class="card-title" style="margin-bottom:16px">💡 Tips for a Great Cover Letter</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+          <div style="padding:14px;background:var(--surface-2);border-radius:var(--radius)">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">Customize Every Time</div>
+            <div style="font-size:13px;color:var(--text-muted)">Tailor your letter to each specific company and role for best results.</div>
+          </div>
+          <div style="padding:14px;background:var(--surface-2);border-radius:var(--radius)">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">Keep It Concise</div>
+            <div style="font-size:13px;color:var(--text-muted)">Ideal cover letters are 3-4 paragraphs. Don't repeat your resume.</div>
+          </div>
+          <div style="padding:14px;background:var(--surface-2);border-radius:var(--radius)">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">Use Keywords</div>
+            <div style="font-size:13px;color:var(--text-muted)">Include keywords from the job description to pass ATS screening.</div>
+          </div>
+          <div style="padding:14px;background:var(--surface-2);border-radius:var(--radius)">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">Show Enthusiasm</div>
+            <div style="font-size:13px;color:var(--text-muted)">Express genuine interest in the company's mission and culture.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+  // app.js already handles the AJAX — we just need to hide placeholder on success
+  // Patch: watch for clOutputCard becoming visible
+  const clObserver = new MutationObserver(() => {
+    const card = document.getElementById("clOutputCard");
+    if (card && !card.classList.contains("hidden")) {
+      const ph = document.getElementById("clPlaceholder");
+      if (ph) ph.style.display = "none";
+    }
+  });
+  const clCard = document.getElementById("clOutputCard");
+  if (clCard) clObserver.observe(clCard, { attributes: true, attributeFilter: ["class"] });
+</script>
+</body>
+</html>

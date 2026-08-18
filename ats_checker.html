@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATS Checker & Career Suggestions – AI CareerCraft</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <div class="loading-text">AI is analyzing your resume…</div>
+  <div class="loading-subtext">Comparing against job description keywords</div>
+</div>
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-icon">C</div>
+      <div>
+        <div class="brand-text">AI CareerCraft</div>
+        <div class="brand-sub">Resume & Portfolio AI</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item" href="/dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+      <div class="nav-section-label">AI Tools</div>
+      <a class="nav-item" href="/resume"><span class="nav-icon">📄</span> Resume Builder</a>
+      <a class="nav-item" href="/cover-letter"><span class="nav-icon">✍️</span> Cover Letter</a>
+      <a class="nav-item" href="/portfolio"><span class="nav-icon">🎨</span> Portfolio Builder</a>
+      <a class="nav-item active" href="/ats-checker"><span class="nav-icon">🔍</span> ATS Checker</a>
+    </nav>
+    <div class="sidebar-footer">
+      {% if demo_mode %}<div class="demo-badge">⚡ Demo Mode Active</div>{% endif %}
+      <a href="/" class="nav-item" style="text-decoration:none"><span class="nav-icon">🏠</span> Home</a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <div class="page-title">🔍 ATS Checker & Career Suggestions</div>
+        <div class="page-subtitle">Optimize your resume and plan your career path</div>
+      </div>
+      {% if demo_mode %}<span class="badge badge-demo">⚡ Demo Mode</span>{% endif %}
+    </header>
+
+    <div class="page-body">
+      {% if demo_mode %}
+      <div class="alert alert-demo">⚡ <strong>Demo Mode:</strong> Sample analysis results will be shown.</div>
+      {% endif %}
+
+      <!-- TABS -->
+      <div class="tab-list">
+        <button class="tab-btn active" data-tab="ats">🔍 ATS Resume Checker</button>
+        <button class="tab-btn" data-tab="career">🗺️ Career Suggestions</button>
+      </div>
+
+      <!-- ─── ATS TAB ─── -->
+      <div class="tab-content active" data-tab-content="ats">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+          <!-- FORM -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Resume & Job Description</div>
+                <div class="card-subtitle">Paste both to analyze compatibility</div>
+              </div>
+            </div>
+            <form id="atsForm">
+              <div class="form-group">
+                <label class="form-label">Your Resume Text *</label>
+                <textarea name="resume_text" class="form-control" rows="8" required
+                  placeholder="Paste your full resume text here…&#10;&#10;Example:&#10;Alex Johnson | Software Developer&#10;Skills: Python, React, Node.js, SQL, Git&#10;Education: B.Tech CS, XYZ University (2025)&#10;Projects: E-Commerce Platform, AI Chatbot…&#10;Experience: Software Intern at TechCorp (2024)"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Job Description *</label>
+                <textarea name="job_description" class="form-control" rows="8" required
+                  placeholder="Paste the job description here…&#10;&#10;Example:&#10;We are looking for a Software Developer with experience in Python, React, and cloud services. The ideal candidate should have strong problem-solving skills, experience with REST APIs, Agile methodologies, and familiarity with Docker and Kubernetes…"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%">
+                🔍 Analyze ATS Compatibility
+              </button>
+            </form>
+          </div>
+
+          <!-- RESULTS -->
+          <div>
+            <div id="atsOutput" class="hidden"></div>
+
+            <div id="atsPlaceholder" class="card">
+              <div class="empty-state">
+                <div class="empty-icon">🎯</div>
+                <div class="empty-title">ATS Score Appears Here</div>
+                <div class="empty-desc">
+                  Paste your resume and the job description, then click Analyze to see your ATS compatibility score, matching keywords, and improvement suggestions.
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:280px;margin:0 auto">
+                  <div class="badge badge-success" style="justify-content:center">Score /100</div>
+                  <div class="badge badge-primary" style="justify-content:center">Matching Skills</div>
+                  <div class="badge badge-error" style="justify-content:center">Missing Keywords</div>
+                  <div class="badge badge-warning" style="justify-content:center">Suggestions</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ATS TIPS -->
+        <div class="card" style="margin-top:24px">
+          <div class="card-title" style="margin-bottom:16px">📖 Understanding ATS Scores</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+            <div style="padding:14px;border-radius:var(--radius);background:#dcfce7;border-left:3px solid var(--success)">
+              <div style="font-size:24px;font-weight:900;color:var(--success)">80-100</div>
+              <div style="font-size:13px;font-weight:700">Excellent</div>
+              <div style="font-size:12px;color:var(--text-muted)">Highly likely to pass ATS and reach a human recruiter.</div>
+            </div>
+            <div style="padding:14px;border-radius:var(--radius);background:#fef3c7;border-left:3px solid var(--warning)">
+              <div style="font-size:24px;font-weight:900;color:var(--warning)">60-79</div>
+              <div style="font-size:13px;font-weight:700">Good</div>
+              <div style="font-size:12px;color:var(--text-muted)">Good chance of passing. Add missing keywords to improve.</div>
+            </div>
+            <div style="padding:14px;border-radius:var(--radius);background:#fee2e2;border-left:3px solid var(--error)">
+              <div style="font-size:24px;font-weight:900;color:var(--error)">&lt; 60</div>
+              <div style="font-size:13px;font-weight:700">Needs Work</div>
+              <div style="font-size:12px;color:var(--text-muted)">Resume likely won't pass ATS. Follow improvement suggestions.</div>
+            </div>
+            <div style="padding:14px;border-radius:var(--radius);background:var(--primary-light);border-left:3px solid var(--primary)">
+              <div style="font-size:24px;margin-bottom:4px">💡</div>
+              <div style="font-size:13px;font-weight:700">Pro Tip</div>
+              <div style="font-size:12px;color:var(--text-muted)">Customize your resume for each job application to maximize your ATS score.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── CAREER TAB ─── -->
+      <div class="tab-content" data-tab-content="career">
+        <div style="display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start">
+          <!-- FORM -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Your Profile</div>
+                <div class="card-subtitle">AI will map your ideal career path</div>
+              </div>
+            </div>
+            <form id="careerForm">
+              <div class="form-group">
+                <label class="form-label">Your Skills</label>
+                <textarea name="skills" class="form-control" rows="3" placeholder="Python, Machine Learning, React, SQL, Data Analysis…"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Education</label>
+                <input type="text" name="education" class="form-control" placeholder="B.Tech Computer Science, 2025" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Interests</label>
+                <textarea name="interests" class="form-control" rows="2" placeholder="AI/ML, Web Development, Cloud Computing, Open Source…"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Target Career Area</label>
+                <input type="text" name="target_career" class="form-control" placeholder="Software Development, Data Science, DevOps…" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Current Experience Level</label>
+                <select name="experience_level" class="form-control">
+                  <option value="fresher">Fresher / Final Year Student</option>
+                  <option value="0-1">0-1 Years Experience</option>
+                  <option value="1-3">1-3 Years Experience</option>
+                  <option value="3+">3+ Years Experience</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%">
+                🔮 Get Career Suggestions
+              </button>
+            </form>
+          </div>
+
+          <!-- OUTPUT -->
+          <div>
+            <div id="careerOutput" class="hidden"></div>
+            <div id="careerPlaceholder" class="card">
+              <div class="empty-state">
+                <div class="empty-icon">🗺️</div>
+                <div class="empty-title">Your Career Roadmap Appears Here</div>
+                <div class="empty-desc">Enter your skills and goals to get AI-powered career path recommendations, roles to target, skills to learn, and interview prep topics.</div>
+                <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:400px;margin:0 auto">
+                  <span class="badge badge-primary">💼 Job Roles</span>
+                  <span class="badge badge-success">📚 Skills to Learn</span>
+                  <span class="badge badge-warning">🗺️ Career Paths</span>
+                  <span class="badge badge-primary">🔧 Project Ideas</span>
+                  <span class="badge badge-success">🎯 Interview Topics</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+  // Hide placeholders after results show
+  document.getElementById("atsForm") && document.getElementById("atsForm").addEventListener("submit", function() {
+    setTimeout(() => {
+      if (!document.getElementById("atsOutput").classList.contains("hidden")) {
+        document.getElementById("atsPlaceholder").style.display = "none";
+      }
+    }, 2000);
+  });
+  document.getElementById("careerForm") && document.getElementById("careerForm").addEventListener("submit", function() {
+    setTimeout(() => {
+      if (!document.getElementById("careerOutput").classList.contains("hidden")) {
+        document.getElementById("careerPlaceholder").style.display = "none";
+      }
+    }, 2000);
+  });
+</script>
+</body>
+</html>
